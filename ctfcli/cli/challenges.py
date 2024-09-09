@@ -152,9 +152,13 @@ class ChallengeCommand:
             challenge_key = challenge_path
             if yaml_path:
                 challenge_key = challenge_key / yaml_path
-
+                new_challenge = Challenge(Path(yaml_path))
+            else:
+                new_challenge = Challenge(Path(challenge_path) / "challenge.yml")
+            
+            new_challenge.create()
             # Add a new challenge to the config
-            config["challenges"][str(challenge_key)] = repo
+            config["challenges"][str(new_challenge.challenge_id)] = challenge_key
 
             if use_subrepo:
                 # Clone with subrepo if configured
@@ -198,7 +202,9 @@ class ChallengeCommand:
 
         # otherwise - we're working with a folder path
         if Path(repo).exists():
-            config["challenges"][repo] = repo
+            new_challenge = Challenge(Path(repo) / "challenge.yml")
+            new_challenge.create()
+            config["challenges"][new_challenge.challenge_id] = repo
             with open(config.config_path, "w+") as f:
                 config.write(f)
 
@@ -598,7 +604,7 @@ class ChallengeCommand:
 
                 found_duplicate = False
                 for remote_challenge in remote_challenges:
-                    if remote_challenge["name"] == challenge_instance["name"]:
+                    if remote_challenge["id"] == challenge_instance["id"]:
                         click.secho(
                             f"Found already existing challenge with the same name ({remote_challenge['name']}). "
                             "Perhaps you meant sync instead of install?",
@@ -664,7 +670,8 @@ class ChallengeCommand:
                 click.echo()
 
                 challenge_name = challenge_instance["name"]
-                if not any(c["name"] == challenge_name for c in remote_challenges):
+                challenge_id = challenge_instance["id"]
+                if not any(c["id"] == challenge_id for c in remote_challenges):
                     click.secho(
                         f"Could not find existing challenge {challenge_name}. "
                         f"Perhaps you meant install instead of sync?",
@@ -1124,13 +1131,9 @@ class ChallengeCommand:
 
         challenges = []
         for challenge_key in challenge_keys:
-            challenge_path = config.project_path / Path(challenge_key)
-
-            if not challenge_path.name.endswith(".yml"):
-                challenge_path = challenge_path / "challenge.yml"
 
             try:
-                challenges.append(Challenge(challenge_path))
+                challenges.append(Challenge(challenge_key))
             except ChallengeException as e:
                 click.secho(str(e), fg="red")
                 continue

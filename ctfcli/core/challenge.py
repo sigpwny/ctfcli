@@ -18,6 +18,7 @@ from ctfcli.core.exceptions import (
     LintException,
     RemoteChallengeNotFound,
 )
+from ctfcli.core.config import Config
 from ctfcli.core.image import Image
 from ctfcli.utils.hashing import hash_file
 from ctfcli.utils.tools import strings
@@ -151,13 +152,18 @@ class Challenge(dict):
 
     # __init__ expects an absolute path to challenge_yml, or a relative one from the cwd
     # it does not join that path with the project_path
-    def __init__(self, challenge_yml: Union[str, PathLike], overrides=None):
+    def __init__(self, challenge_yml: Optional[Union[str, PathLike]] = None, id: Optional[int] = None, overrides=None):
+        config = Config()
         log.debug(f"Challenge.__init__: ({challenge_yml=}, {overrides=}")
         if overrides is None:
             overrides = {}
-
-        self.challenge_file_path = Path(challenge_yml)
-
+        if id:
+            self.challenge_file_path = Path(config.challenges[id]) / "challenge.yml"
+        elif challenge_yml:
+            self.challenge_file_path = Path(challenge_yml)
+        else:
+            raise InvalidChallengeFile(f"Challenge cannot be initialized with no arguments")
+        
         if not self.challenge_file_path.is_file():
             raise InvalidChallengeFile(f"Challenge file at {self.challenge_file_path} could not be found")
 
@@ -178,7 +184,7 @@ class Challenge(dict):
         super(Challenge, self).__init__(challenge_data)
 
         # Challenge id is unknown before loading the remote challenge
-        self.challenge_id = None
+        self.challenge_id = id
 
         # API is not initialized before running an API-related operation, but should be reused later
         self._api = None
