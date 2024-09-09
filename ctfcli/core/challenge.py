@@ -158,7 +158,7 @@ class Challenge(dict):
         if overrides is None:
             overrides = {}
         if id:
-            self.challenge_file_path = Path(config.challenges[id]) / "challenge.yml"
+            self.challenge_file_path = Path(config.challenges[str(id)]) / "challenge.yml"
         elif challenge_yml:
             self.challenge_file_path = Path(challenge_yml)
         else:
@@ -171,7 +171,7 @@ class Challenge(dict):
 
         with open(self.challenge_file_path) as challenge_file:
             try:
-                challenge_definition = yaml.load(challenge_file.read(),Loader=FullLoader)
+                challenge_definition = yaml.safe_load(challenge_file.read())
             except yaml.YAMLError as e:
                 raise InvalidChallengeFile(f"Challenge file at {self.challenge_file_path} could not be loaded:\n{e}")
 
@@ -184,7 +184,10 @@ class Challenge(dict):
         super(Challenge, self).__init__(challenge_data)
 
         # Challenge id is unknown before loading the remote challenge
-        self.challenge_id = id
+        if id == None:
+            self._load_challenge_id()
+        else:
+            self.challenge_id = id
 
         # API is not initialized before running an API-related operation, but should be reused later
         self._api = None
@@ -664,7 +667,8 @@ class Challenge(dict):
             raise InvalidChallengeDefinition("Challenge does not provide a name")
 
         if not challenge.get("value", False) and challenge.get("type", "standard") != "dynamic":
-            raise InvalidChallengeDefinition("Challenge does not provide a value")
+            challenge["value"] = 0
+            #raise InvalidChallengeDefinition("Challenge does not provide a value")
 
         if challenge.get("files", False) and "files" not in ignore:
             # _validate_files will raise if file is not found

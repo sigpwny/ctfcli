@@ -597,7 +597,7 @@ class ChallengeCommand:
 
                 click.secho(
                     f"Installing '{challenge_instance}' ("
-                    f"{challenge_instance.challenge_file_path.relative_to(config.project_path)}"
+                    f"{config.project_path / challenge_instance.challenge_file_path}"
                     f") ...",
                     fg="blue",
                 )
@@ -670,7 +670,7 @@ class ChallengeCommand:
                 click.echo()
 
                 challenge_name = challenge_instance["name"]
-                challenge_id = challenge_instance["id"]
+                challenge_id = challenge_instance["challenge_id"]
                 if not any(c["id"] == challenge_id for c in remote_challenges):
                     click.secho(
                         f"Could not find existing challenge {challenge_name}. "
@@ -682,7 +682,7 @@ class ChallengeCommand:
 
                 click.secho(
                     f"Syncing '{challenge_name}' ("
-                    f"{challenge_instance.challenge_file_path.relative_to(config.project_path)}"
+                    f"{config.project_path / challenge_instance.challenge_file_path}"
                     f") ...",
                     fg="blue",
                 )
@@ -757,7 +757,7 @@ class ChallengeCommand:
 
                 click.secho(
                     f"Deploying challenge service '{challenge_name}' "
-                    f"({challenge_instance.challenge_file_path.relative_to(config.project_path)}) "
+                    f"({config.project_path / challenge_instance.challenge_file_path}) "
                     f"with {deployment_handler.__class__.__name__} ...",
                     fg="blue",
                 )
@@ -1134,7 +1134,7 @@ class ChallengeCommand:
         for challenge_key in challenge_keys:
 
             try:
-                challenges.append(Challenge(int(challenge_key)))
+                challenges.append(Challenge(id = int(challenge_key)))
             except ChallengeException as e:
                 click.secho(str(e), fg="red")
                 continue
