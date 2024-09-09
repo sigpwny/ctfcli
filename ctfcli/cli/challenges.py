@@ -999,7 +999,8 @@ class ChallengeCommand:
             click.echo(f" - {challenge_instance}")
 
         return 1
-
+    
+    
     def verify(self, challenge: str = None, ignore: Tuple[str] = ()) -> int:
         log.debug(f"verify: (challenge={challenge}, ignore={ignore})")
 

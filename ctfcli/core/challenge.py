@@ -137,7 +137,7 @@ class Challenge(dict):
             raise ChallengeException(f"Could not create challenge directory '{challenge_dir_name}' for '{name}'")
 
         # Add the newly created local challenge to the config file
-        config["challenges"][challenge_dir_name] = challenge_dir_name
+        config["challenges"][str(remote_challenge["id"])] = challenge_dir_name
         with open(config.config_path, "w+") as f:
             config.write(f)
 
@@ -171,7 +171,7 @@ class Challenge(dict):
 
         with open(self.challenge_file_path) as challenge_file:
             try:
-                challenge_definition = yaml.safe_load(challenge_file.read())
+                challenge_definition = yaml.load(challenge_file.read(),Loader=FullLoader)
             except yaml.YAMLError as e:
                 raise InvalidChallengeFile(f"Challenge file at {self.challenge_file_path} could not be loaded:\n{e}")
 
