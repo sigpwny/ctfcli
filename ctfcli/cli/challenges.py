@@ -204,7 +204,7 @@ class ChallengeCommand:
         if Path(repo).exists():
             new_challenge = Challenge(Path(repo) / "challenge.yml")
             new_challenge.create()
-            config["challenges"][new_challenge.challenge_id] = repo
+            config["challenges"][str(new_challenge.challenge_id)] = repo
             with open(config.config_path, "w+") as f:
                 config.write(f)
 
@@ -1133,7 +1133,7 @@ class ChallengeCommand:
         for challenge_key in challenge_keys:
 
             try:
-                challenges.append(Challenge(challenge_key))
+                challenges.append(Challenge(int(challenge_key)))
             except ChallengeException as e:
                 click.secho(str(e), fg="red")
                 continue
